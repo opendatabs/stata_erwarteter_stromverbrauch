@@ -7,7 +7,7 @@ if (file.exists("Stromverbrauch_productive.R")) {
   file.remove("Stromverbrauch_productive.R")
 }
 
-knitr::purl("stromverbrauch/Productive/Stromverbrauch_productive.Rmd", output = "Stromverbrauch_productive.R")
+knitr::purl("Stromverbrauch_productive.Rmd", output = "Stromverbrauch_productive.R")
 
 original_script <- readLines("Stromverbrauch_productive.R")
 
