@@ -19,5 +19,5 @@ ENV RENV_PATHS_LIBRARY stromverbrauch/Productive/renv/library
 
 RUN R -e "renv::restore()"
 
-CMD ["Rscript", "/code/data-processing/stata_erwarteter_stromverbrauch/Stromverbrauch_OGD.R"]
+CMD ["Rscript", "Stromverbrauch_OGD.R"]
 
