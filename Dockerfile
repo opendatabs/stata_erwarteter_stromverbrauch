@@ -21,9 +21,3 @@ RUN R -e "renv::restore()"
 
 CMD ["Rscript", "/code/data-processing/stata_erwarteter_stromverbrauch/Stromverbrauch_OGD.R"]
 
-# Docker commands to create image and run container:
-# cd stata_erwarteter_stromverbrauch
-# docker build -t stromverbrauch .
-# docker run -it --rm -v /data/dev/workspace/data-processing:/code/data-processing -v /mnt/OGD-DataExch/StatA/Stromverbrauch:/code/data-processing/stata_erwarteter_stromverbrauch/data/export --name stromverbrauch stromverbrauch
-# On Mac run:
-# docker run -it --rm -v /PycharmProjects/data-processing:/code/data-processing --name stromverbrauch stromverbrauch
