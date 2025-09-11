@@ -1,5 +1,5 @@
 FROM rocker/rstudio:4.5.1
-WORKDIR /code/data-processing/stata_erwarteter_stromverbrauch
+WORKDIR /code
 
 RUN apt-get update && apt-get install -y \
     sudo \
@@ -13,7 +13,7 @@ RUN apt-get update && apt-get install -y \
 
 RUN R -e "install.packages('renv', repos = c(CRAN = 'https://cloud.r-project.org'))"
 
-COPY stromverbrauch/Productive/renv.lock renv.lock
+COPY . /code/
 
 ENV RENV_PATHS_LIBRARY stromverbrauch/Productive/renv/library
 
