@@ -40,12 +40,22 @@ RUN apt-get update && apt-get install -y \
     libxml2-dev \
     default-jdk
 
-RUN R -e "install.packages('renv', repos = c(CRAN = 'https://cloud.r-project.org'))"
+# install the R dependencies
+## make the renv install script and renv.lock file
+## available in the working dir and run the install
+COPY .renv_install.sh .
+COPY renv.lock .
+RUN bash .renv_install.sh
+## ensure renv lock is in the project directory
+COPY renv.lock /home/rstudio/renv.lock
+COPY install.R /tmp/
+RUN R -f /tmp/install.R
+# Additionally run renv::restore here
+RUN R -e "renv::restore()"
+
+## Clean up the /home/rstudio directory to avoid confusion in nested R projects
+RUN rm /home/rstudio/.Rprofile; rm /home/rstudio/renv.lock
 
 COPY . /code/
-
-ENV RENV_PATHS_LIBRARY=/opt/renv/library
-
-RUN R -e "renv::restore()"
 
 COPY --from=builder ${HOME}/.renku/venv ${HOME}/.renku/venv
