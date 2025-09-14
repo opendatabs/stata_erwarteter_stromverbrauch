@@ -1,11 +1,8 @@
 ########################################################
 #        Renku install section                         #
-
 FROM renku/renkulab-r:4.3.1-0.25.0 as builder
 
 ARG RENKU_VERSION=2.9.4
-
-# Install renku from pypi or from github if a dev version
 RUN if [ -n "$RENKU_VERSION" ] ; then \
         source .renku/venv/bin/activate ; \
         currentversion=$(renku --version) ; \
@@ -24,12 +21,10 @@ RUN if [ -n "$RENKU_VERSION" ] ; then \
 ########################################################
 FROM renku/renkulab-r:4.3.1-0.25.0
 
-WORKDIR /code
-
 ARG DEBIAN_FRONTEND=noninteractive
 
+# System deps
 USER root
-
 RUN apt-get update && apt-get install -y \
     sudo \
     gdebi-core \
@@ -38,24 +33,32 @@ RUN apt-get update && apt-get install -y \
     libcurl4-openssl-dev libssl-dev \
     r-cran-rstan \
     libxml2-dev \
-    default-jdk
+    default-jdk \
+  && rm -rf /var/lib/apt/lists/*
 
-# install the R dependencies
-## make the renv install script and renv.lock file
-## available in the working dir and run the install
-COPY .renv_install.sh .
-COPY renv.lock .
-RUN bash .renv_install.sh
-## ensure renv lock is in the project directory
-COPY renv.lock /home/rstudio/renv.lock
-COPY install.R /tmp/
+# ---- R/renv setup runs as NB_USER in /home/rstudio ----
+USER ${NB_USER}
+WORKDIR /home/rstudio
+
+# Copy only what's needed for package restore (better caching)
+COPY --chown=${NB_USER}:${NB_USER} .renv_install.sh renv.lock ./
+COPY --chown=${NB_USER}:${NB_USER} install.R /tmp/install.R
+
+# Install R packages (install.R may set repos, etc.)
 RUN R -f /tmp/install.R
-# Additionally run renv::restore here
-RUN R -e "renv::restore()"
 
-## Clean up the /home/rstudio directory to avoid confusion in nested R projects
-RUN rm /home/rstudio/.Rprofile; rm /home/rstudio/renv.lock
+# Restore from lockfile in home (no project path shenanigans)
+RUN R -e 'install.packages("renv", repos="https://cloud.r-project.org"); renv::restore(lockfile="renv.lock")'
 
+# Clean up home to avoid nested-project confusion
+RUN rm -f /home/rstudio/.Rprofile /home/rstudio/renv.lock
+
+# ---- App code (after deps for better layer cache) ----
+WORKDIR /code
+USER root
 COPY . /code/
+RUN chown -R ${NB_USER}:${NB_USER} /code
+USER ${NB_USER}
 
+# bring Renku venv from builder
 COPY --from=builder ${HOME}/.renku/venv ${HOME}/.renku/venv
