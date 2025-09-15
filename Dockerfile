@@ -24,7 +24,7 @@ RUN if [ -n "$RENKU_VERSION" ] ; then \
 ########################################################
 FROM renku/renkulab-r:4.3.1-0.25.0
 
-WORKDIR /home/rstudio
+WORKDIR ${HOME}
 
 ARG DEBIAN_FRONTEND=noninteractive
 USER root
@@ -39,6 +39,8 @@ RUN apt-get update && apt-get install -y \
     libxml2-dev \
     default-jdk
 
+USER ${NB_USER}
+
 ENV RENV_PATHS_CACHE=/opt/renv/cache
 RUN mkdir -p /opt/renv/cache && chown -R rstudio:rstudio /opt/renv
 
@@ -47,8 +49,8 @@ RUN bash .renv_install.sh
 
 RUN R -e "options(renv.consent=TRUE); renv::restore(confirm=FALSE)"
 
-COPY --chown=rstudio:rstudio . /home/rstudio/
-COPY --from=builder /home/rstudio/.renku/venv /home/rstudio/.renku/venv
-RUN chown -R rstudio:rstudio /home/rstudio
+COPY --chown=rstudio:rstudio . ${HOME}/
+COPY --from=builder ${HOME}/.renku/venv ${HOME}/.renku/venv
+RUN chown -R rstudio:rstudio ${HOME}
 
 USER rstudio
