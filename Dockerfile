@@ -39,8 +39,6 @@ RUN apt-get update && apt-get install -y \
     libxml2-dev \
     default-jdk
 
-USER ${NB_USER}
-
 ENV RENV_PATHS_CACHE=/opt/renv/cache
 RUN mkdir -p /opt/renv/cache && chown -R rstudio:rstudio /opt/renv
 
