@@ -49,6 +49,6 @@ RUN R -e "options(renv.consent=TRUE); renv::restore(confirm=FALSE)"
 
 COPY --chown=rstudio:rstudio . /home/rstudio/
 COPY --from=builder /home/rstudio/.renku/venv /home/rstudio/.renku/venv
-RUN chown -R rstudio:rstudio /home/rstudio/project
+RUN chown -R rstudio:rstudio /home/rstudio
 
 USER rstudio
