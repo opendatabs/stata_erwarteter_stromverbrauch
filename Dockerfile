@@ -24,8 +24,6 @@ RUN if [ -n "$RENKU_VERSION" ] ; then \
 ########################################################
 FROM renku/renkulab-r:4.3.1-0.25.0
 
-WORKDIR ${HOME}
-
 ARG DEBIAN_FRONTEND=noninteractive
 USER root
 
@@ -40,15 +38,19 @@ RUN apt-get update && apt-get install -y \
     default-jdk
 
 ENV RENV_PATHS_CACHE=/opt/renv/cache
-RUN mkdir -p /opt/renv/cache && chown -R rstudio:rstudio /opt/renv
+RUN mkdir -p /opt/renv/cache && chown -R ${NB_USER}:${NB_USER} /opt/renv
 
-COPY .renv_install.sh renv.lock ./
+USER ${NB_USER}
+
+# Pre-seed renv (script + lockfile)
+COPY --chown=rstudio:rstudio .renv_install.sh renv.lock ./
 RUN bash .renv_install.sh
 
-RUN R -e "options(renv.consent=TRUE); renv::restore(confirm=FALSE)"
+# Restore packages
+RUN R -q -e "options(renv.consent=TRUE); renv::restore(confirm=FALSE)"
 
-COPY --chown=rstudio:rstudio . ${HOME}/
-COPY --from=builder ${HOME}/.renku/venv ${HOME}/.renku/venv
-RUN chown -R rstudio:rstudio ${HOME}
+# Project files
+COPY --chown=${NB_USER}:${NB_USER} . ${HOME}/
 
-USER rstudio
+# Bring the updated Renku venv
+COPY --from=builder --chown=${NB_USER}:${NB_USER} ${HOME}/.renku/venv ${HOME}/.renku/venv
