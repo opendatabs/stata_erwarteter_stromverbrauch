@@ -50,7 +50,7 @@ fread("https://data.geo.admin.ch/ch.meteoschweiz.klima/nbcn-tageswerte/nbcn-dail
         "-",
         substr(date, 7, 8),
         " 00:00:00"),
-      , format="%Y-%m-%d %H:%M:%S"
+      format="%Y-%m-%d %H:%M:%S"
     )
   ) %>%
   mutate_at(c("gre000d0", "hto000d0", "nto000d0", "prestad0", "rre150d0", "sre000d0", "tre200d0", "tre200dn", "tre200dx", "ure200d0"), as.numeric) %>%
@@ -66,7 +66,7 @@ fread("https://data.geo.admin.ch/ch.meteoschweiz.klima/nbcn-tageswerte/nbcn-dail
             "-",
             substr(date, 7, 8),
             " 00:00:00"),
-          , format="%Y-%m-%d  %H:%M:%S", tz="Europe/Berlin"
+          format="%Y-%m-%d  %H:%M:%S", tz="Europe/Berlin"
         )
       ) %>%
       mutate_at(c("gre000d0", "hto000d0", "nto000d0", "prestad0", "rre150d0", "sre000d0", "tre200d0", "tre200dn", "tre200dx", "ure200d0"), as.numeric)
@@ -125,7 +125,7 @@ highchart(type = "stock") %>%
 
 httr::GET("https://data.bs.ch/explore/dataset/100233/download/?format=csv&timezone=Europe%2FBerlin")  %>%
   content(., "text") %>%
-  fread(sep=";", colClasses = c(timestamp_interval_start_text = "character")) %>%
+  fread(sep = ";", colClasses = c(timestamp_interval_start_text = "character")) %>%
   select(timestamp = timestamp_interval_start_text, netzlast_kwh = stromverbrauch_kwh, grundversorgte_kunden_kwh, freie_kunden_kwh) %>%
   arrange(timestamp) %>%
   mutate(
@@ -140,7 +140,7 @@ httr::GET("https://data.bs.ch/explore/dataset/100233/download/?format=csv&timezo
             freie_kunden_kwh = sum(freie_kunden_kwh, na.rm = T)) %>%
   ungroup() %>%
   mutate(timestamp = as.POSIXct(
-    paste0(year, "-", month, "-", day, " 00:00:00"), format="%Y-%m-%d  %H:%M:%S", tz="Europe/Berlin")
+    paste0(year, "-", month, "-", day, " 00:00:00"), format = "%Y-%m-%d  %H:%M:%S", tz = "Europe/Berlin")
   ) %>%
   assign("strom_daily", ., inherits = TRUE)
 
@@ -154,7 +154,7 @@ httr::GET("https://data.bs.ch/explore/dataset/100233/download/?format=csv&timezo
 
 highchart(type = "stock") %>% 
   hc_add_series(strom_daily %>%
-         mutate(Date=as.Date(timestamp),
+         mutate(Date = as.Date(timestamp),
                 netzlast_kwh = netzlast_kwh/1000000), 
          type = "line", 
          hcaes(Date, netzlast_kwh), 
@@ -178,7 +178,7 @@ highchart(type = "stock") %>%
 
 httr::GET("https://data.bs.ch/explore/dataset/100074/download/?format=csv&timezone=Europe%2FBerlin") %>%
   content(., "text") %>%
-  fread(sep=";") %>%
+  fread(sep = ";") %>%
   select(tag_datum, name, code, kategorie_name) %>%
   filter(name != "Fasnachtsmontag", name != "Fasnachtsmittwoch", name != "Dies Academicus") %>%
   filter(!(tag_datum == "2008-05-01 00:00:00" & name == "Tag der Arbeit")) %>% # Tag der Arbeit doubles with Auffahrt
@@ -286,13 +286,6 @@ Data %>%
          tre200d0_sq = tre200d0^2
   ) %>%
   dplyr::select(-c(grundversorgte_kunden_kwh, freie_kunden_kwh, year, month, day, Herbstmesse, Feiertage, Ferien, daytype, weekday)) %>%
-  mutate(
-    Ettape = case_when(
-      time < as.Date("2022-07-01") ~ "Train",
-      time >= as.Date("2022-07-01") & time < as.Date("2023-05-01") ~ "Test",
-      time >= as.Date("2023-05-01") ~ "Prognose"
-    )
-  ) %>%
   slice(1:(n() - 1)) %>%
   assign("Data_selec", ., inherits = TRUE)
 
@@ -307,7 +300,7 @@ Data %>%
 ```{r message=FALSE, warning=FALSE}
 
 Data_selec_model <- Data_selec %>%
-  filter(time < as.Date("2024-10-31"))
+  filter(time < as.Date("2025-09-30"))
 
 set.seed(12345)
 
@@ -326,7 +319,7 @@ ols_Fit1 <- train(netzlast_kwh ~ time_num + I(time_num^2) + Di_dummy + Mi_dummy 
                     rre150d0 + sre000d0 + tre200d0 + I(tre200d0^2) + 
                     tre200dn + tre200dx +
                     ure200d0 + Covid19_Lockdown + HGT + I(HGT^2) + Neujahrstag_dummy + Karfreitag_dummy + 
-                    # Ostersonntag_dummy + 
+                    Ostersonntag_dummy +
                     Ostermontag_dummy + Tag_der_Arbeit_dummy + Auffahrt_dummy + 
                     Pfingssonntag_dummy +
                     Pfingstmontag_dummy + Bundesfeiertag_dummy + Heiligabend_dummy + Weihnachten_dummy + Stephanstag_dummy + Silvester_dummy + Ferien_dummy + 
@@ -368,10 +361,10 @@ data.frame(
 
 ```{r message=FALSE, warning=FALSE}
 
-final_model <- lm(netzlast_kwh ~ time_num + I(time_num^2) + Di_dummy + Mi_dummy + Do_dummy + Fr_dummy + Sa_dummy + So_dummy + gre000d0 + hto000d0 + nto000d0 + # prestad0 +
-                    rre150d0 + sre000d0 + tre200d0 + I(tre200d0^2) + tre200dn + #tre200dx +
+final_model <- lm(netzlast_kwh ~ time_num + I(time_num^2) + Di_dummy + Mi_dummy + Do_dummy + Fr_dummy + Sa_dummy + So_dummy + gre000d0 + hto000d0 + #nto000d0 + prestad0 +
+                    rre150d0 + sre000d0 + tre200d0 + I(tre200d0^2) + #tre200dn + tre200dx +
                     ure200d0 + Covid19_Lockdown + HGT + I(HGT^2) + Neujahrstag_dummy + Karfreitag_dummy + 
-                    # Ostersonntag_dummy + 
+                    Ostersonntag_dummy + 
                     Ostermontag_dummy + Tag_der_Arbeit_dummy + Auffahrt_dummy + 
                     Pfingssonntag_dummy +
                     Pfingstmontag_dummy + Bundesfeiertag_dummy + Heiligabend_dummy + Weihnachten_dummy + Stephanstag_dummy + Silvester_dummy + Ferien_dummy + 
@@ -464,7 +457,7 @@ write.csv2(Data_model_ols %>%
                forecast_lowFI = lwr,
                forecast_highFI = upr
                ), 
-           "100245_Strom_Wetter.csv", row.names=F, na = "") 
+           "100245.csv", row.names = F, na = "") 
 
 ```
 
