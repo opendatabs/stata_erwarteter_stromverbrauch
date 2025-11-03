@@ -2,7 +2,7 @@
 
 [![launch - renku](https://renkulab.io/renku-badge.svg)](https://renkulab.io/p/statabs/erwarteter-stromverbrauch-basel-stadt) [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/git/https%3A%2F%2Fgithub.com%2Fopendatabs%2Fstata_erwarteter_stromverbrauch/HEAD?urlpath=rstudio)
 
-Welcome to the "Erwarteter Stromverbrauch"-Project! This project is designed to forecast gas consumption in the canton of Basel-Stadt using various data-driven techniques. It's hosted on RenkuLab leveraging the power of reproducibility. 🌟
+Welcome to the "Erwarteter Stromverbrauch"-Project! This project is designed to forecast electricity consumption in the canton of Basel-Stadt using various data-driven techniques. It's hosted on RenkuLab leveraging the power of reproducibility. 🌟
 
 ## Contributing
 
